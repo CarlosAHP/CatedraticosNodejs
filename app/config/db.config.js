@@ -29,6 +29,8 @@ db.Provider = require('../models/provider.model.js')(sequelize, Sequelize);
 db.Employee = require('../models/employee.model.js')(sequelize, Sequelize);
 db.Supervisor = require('../models/supervisor.model.js')(sequelize, Sequelize);
 db.Song = require('../models/song.model.js')(sequelize, Sequelize);
+db.Libro = require('../models/libro.model.js')(sequelize, Sequelize);
+db.Prestamo = require('../models/prestamo.model.js')(sequelize, Sequelize);
 
 // Función para inicializar la base de datos con datos predefinidos
 db.initialize = async () => {
@@ -50,12 +52,10 @@ db.initialize = async () => {
     { firstname: 'Marie', lastname: 'Curie', department: 'Research' }
   ];
 
-  // Inserción de datos en las tablas existentes
   await db.Customer.bulkCreate(customers);
   await db.Provider.bulkCreate(providers);
   const insertedSupervisors = await db.Supervisor.bulkCreate(supervisors, { returning: true });
 
-  // Usar los IDs de los supervisores insertados
   const employees = [
     { firstname: 'Alice', lastname: 'Johnson', position: 'Manager', salary: 60000, hireDate: new Date(), supervisorId: insertedSupervisors[0].id },
     { firstname: 'Bob', lastname: 'Smith', position: 'Developer', salary: 50000, hireDate: new Date(), supervisorId: insertedSupervisors[1].id }
@@ -70,6 +70,22 @@ db.initialize = async () => {
   ];
 
   await db.Song.bulkCreate(songs);
+
+  // Datos predefinidos para la tabla Libro
+  const libros = [
+    { codigo: 1, nombre: 'Libro 1', editorial: 'Editorial 1', autor: 'Autor 1', genero: 'Género 1', paisAutor: 'País 1', numeroPaginas: 200, anoEdicion: new Date(2020, 0, 1), precio: 19.99 },
+    { codigo: 2, nombre: 'Libro 2', editorial: 'Editorial 2', autor: 'Autor 2', genero: 'Género 2', paisAutor: 'País 2', numeroPaginas: 300, anoEdicion: new Date(2021, 0, 1), precio: 29.99 }
+  ];
+
+  await db.Libro.bulkCreate(libros);
+
+  // Datos predefinidos para la tabla Prestamo
+  const prestamos = [
+    { numeroPedido: 1, codigoLibro: 1, codigoUsuario: 100, fechaSalida: new Date(2023, 7, 1), fechaMaximaDevolver: new Date(2023, 7, 15), fechaDevolucion: null },
+    { numeroPedido: 2, codigoLibro: 2, codigoUsuario: 101, fechaSalida: new Date(2023, 7, 5), fechaMaximaDevolver: new Date(2023, 7, 20), fechaDevolucion: null }
+  ];
+
+  await db.Prestamo.bulkCreate(prestamos);
 
   console.log('Datos predefinidos insertados correctamente');
 };

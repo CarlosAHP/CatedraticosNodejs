@@ -6,6 +6,10 @@ const providers = require('../controllers/provider.controller.js');
 const employees = require('../controllers/employee.controller.js');
 const supervisors = require('../controllers/supervisor.controller.js');
 const songs = require('../controllers/song.controller.js');
+const prestamos = require('../controllers/prestamo.controller.js');
+const libros = require('../controllers/libro.controller.js');
+
+
 
 // Customer routes
 router.post('/api/customers/create', customers.create);
@@ -44,5 +48,19 @@ router.get('/api/songs', songs.findAll);
 router.get('/api/songs/:id', songs.findById);
 router.put('/api/songs/update/:id', songs.update);
 router.delete('/api/songs/delete/:id', songs.delete);
+
+router.post('/api/libros/create', libros.create);
+router.get('/api/libros/all', libros.findAll);
+router.get('/api/libros/:id', libros.findOne);
+router.put('/api/libros/update/:id', libros.update);
+router.delete('/api/libros/delete/:id', libros.delete);
+
+// Rutas para Prestamo
+router.post('/api/prestamos/create', prestamos.create);
+router.get('/api/prestamos/all', prestamos.findAll);
+router.get('/api/prestamos/:id', prestamos.findOne);
+router.put('/api/prestamos/update/:id', prestamos.update);
+router.delete('/api/prestamos/delete/:id', prestamos.delete);
+
 
 module.exports = router;
