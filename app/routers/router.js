@@ -16,7 +16,8 @@ router.delete('/api/catedraticos/:id', catedraticos.delete);
 router.post('/api/control-ingreso/create', controlIngresos.create);
 router.get('/api/control-ingreso', controlIngresos.retrieveAll);
 router.get('/api/control-ingreso/:id', controlIngresos.getById);
-
+router.put('/api/control-ingreso/:id', controlIngresos.update); // Agregar si tienes un método update
+router.delete('/api/control-ingreso/:id', controlIngresos.delete); // Agregar si tienes un método delete
 
 // Provider routes
 router.post('/api/providers/create', providers.create);
