@@ -1,97 +1,98 @@
 const env = require('./env.js');
-const Sequelize = require('sequelize');
+const bcrypt = require('bcrypt');  // Asegúrate de importar bcrypt al inicio
+const { Sequelize } = require('sequelize');
+
+// Confirmamos el valor de dialecto para asegurar que es una cadena de texto
+console.log('Dialect:', env.dialect); // Esto debería mostrar "postgres"
+
+// Inicialización de Sequelize
 const sequelize = new Sequelize(env.database, env.username, env.password, {
   host: env.host,
   dialect: env.dialect,
   dialectOptions: {
-    ssl: {
-      require: true,
-      rejectUnauthorized: false
-    }
+    ssl: env.ssl, // Usa directamente el objeto ssl desde env.js
   },
-  operatorsAliases: false,
-  pool: {
-    max: env.max,
-    min: env.pool.min,
-    acquire: env.pool.acquire,
-    idle: env.pool.idle,
-  }
+  pool: env.pool,
 });
 
 const db = {};
 
+// Asignamos Sequelize y la instancia a db
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
 // Importación de modelos
-db.Customer = require('../models/customer.model.js')(sequelize, Sequelize);
 db.Provider = require('../models/provider.model.js')(sequelize, Sequelize);
-db.Employee = require('../models/employee.model.js')(sequelize, Sequelize);
 db.Supervisor = require('../models/supervisor.model.js')(sequelize, Sequelize);
 db.Song = require('../models/song.model.js')(sequelize, Sequelize);
-db.Libro = require('../models/libro.model.js')(sequelize, Sequelize);
-db.Prestamo = require('../models/prestamo.model.js')(sequelize, Sequelize);
+db.Project = require('../models/project.model.js')(sequelize, Sequelize);
+db.Usuario = require('../models/usuario.model.js')(sequelize, Sequelize); // Asegúrate de importar el modelo de Usuario
 
 // Función para inicializar la base de datos con datos predefinidos
 db.initialize = async () => {
-  await sequelize.sync({ force: true }); // Esta opción eliminará y recreará las tablas cada vez que se ejecute (solo para desarrollo)
+  try {
+    await sequelize.sync({ force: true });
+    console.log('Base de datos sincronizada correctamente.');
 
-  // Datos predefinidos para las tablas existentes (ejemplo)
-  const customers = [
-    { firstname: 'John', lastname: 'Doe', address: '123 Main St', age: 30 },
-    { firstname: 'Jane', lastname: 'Doe', address: '456 Elm St', age: 25 }
-  ];
+    // Datos de prueba para la tabla Provider
+    await db.Provider.bulkCreate([
+      { name: 'Provider 1', contactNumber: '123-456-7890', email: 'provider1@example.com', address: '789 Pine St' },
+      { name: 'Provider 2', contactNumber: '987-654-3210', email: 'provider2@example.com', address: '123 Oak Ave' }
+    ]);
 
-  const providers = [
-    { name: 'Provider 1', contactNumber: '123-456-7890', email: 'provider1@example.com', address: '789 Pine St' },
-    { name: 'Provider 2', contactNumber: '987-654-3210', email: 'provider2@example.com', address: '321 Oak St' }
-  ];
+    // Datos de prueba para la tabla Supervisor
+    await db.Supervisor.bulkCreate([
+      { firstname: 'Carlos', lastname: 'Santana', department: 'IT' },
+      { firstname: 'Marie', lastname: 'Curie', department: 'Research' }
+    ]);
 
-  const supervisors = [
-    { firstname: 'Carlos', lastname: 'Santana', department: 'IT' },
-    { firstname: 'Marie', lastname: 'Curie', department: 'Research' }
-  ];
+    // Datos de prueba para la tabla Project (ToDo)
+    await db.Project.bulkCreate([
+      {
+        title: 'Finalizar el backend de API',
+        description: 'Crear, leer, actualizar y borrar operaciones para proyectos.',
+        status: 'in progress',
+        dueDate: new Date(2024, 11, 20)
+      },
+      {
+        title: 'Diseñar el frontend con React',
+        description: 'Crear componentes en React para interactuar con la API.',
+        status: 'pending',
+        dueDate: new Date(2024, 11, 25)
+      },
+      {
+        title: 'Desplegar en Render',
+        description: 'Configurar y desplegar la API y el frontend en Render.',
+        status: 'pending',
+        dueDate: new Date(2024, 11, 30)
+      }
+    ]);
 
-  await db.Customer.bulkCreate(customers);
-  await db.Provider.bulkCreate(providers);
-  const insertedSupervisors = await db.Supervisor.bulkCreate(supervisors, { returning: true });
+    // Datos de prueba para la tabla Usuario
+    await db.Usuario.bulkCreate([
+      {
+        NOMBRE_USUARIO: 'usuario1',
+        CORREO: 'usuario1@example.com',
+        CONTRASEÑA: await bcrypt.hash('password123', 10),  // Contraseña hasheada
+        ROL: 'usuario',
+        TELEFONO: '123-456-7890',
+        AVATAR_URL: null  // Deja el avatar como null o añade una URL si prefieres
+      },
+      {
+        NOMBRE_USUARIO: 'admin1',
+        CORREO: 'admin1@example.com',
+        CONTRASEÑA: await bcrypt.hash('adminpass123', 10),  // Contraseña hasheada
+        ROL: 'admin',
+        TELEFONO: '987-654-3210',
+        AVATAR_URL: null  // Deja el avatar como null o añade una URL si prefieres
+      }
+    ]);
 
-  const employees = [
-    { firstname: 'Alice', lastname: 'Johnson', position: 'Manager', salary: 60000, hireDate: new Date(), supervisorId: insertedSupervisors[0].id },
-    { firstname: 'Bob', lastname: 'Smith', position: 'Developer', salary: 50000, hireDate: new Date(), supervisorId: insertedSupervisors[1].id }
-  ];
-
-  await db.Employee.bulkCreate(employees);
-
-  // Datos predefinidos para la tabla Song
-  const songs = [
-    { name: 'Song 1', description: 'Description for Song 1', artist: 'Artist 1', duration: 240, extension: 'mp3', album: 'Album 1', year: 2023 },
-    { name: 'Song 2', description: 'Description for Song 2', artist: 'Artist 2', duration: 180, extension: 'wav', album: 'Album 2', year: 2022 }
-  ];
-
-  await db.Song.bulkCreate(songs);
-
-  // Datos predefinidos para la tabla Libro
-  const libros = [
-    { codigo: 1, nombre: 'Libro 1', editorial: 'Editorial 1', autor: 'Autor 1', genero: 'Género 1', paisAutor: 'País 1', numeroPaginas: 200, anoEdicion: new Date(2020, 0, 1), precio: 19.99 },
-    { codigo: 2, nombre: 'Libro 2', editorial: 'Editorial 2', autor: 'Autor 2', genero: 'Género 2', paisAutor: 'País 2', numeroPaginas: 300, anoEdicion: new Date(2021, 0, 1), precio: 29.99 }
-  ];
-
-  await db.Libro.bulkCreate(libros);
-
-  // Datos predefinidos para la tabla Prestamo
-  const prestamos = [
-    { numeroPedido: 1, codigoLibro: 1, codigoUsuario: 100, fechaSalida: new Date(2023, 7, 1), fechaMaximaDevolver: new Date(2023, 7, 15), fechaDevolucion: null },
-    { numeroPedido: 2, codigoLibro: 2, codigoUsuario: 101, fechaSalida: new Date(2023, 7, 5), fechaMaximaDevolver: new Date(2023, 7, 20), fechaDevolucion: null }
-  ];
-
-  await db.Prestamo.bulkCreate(prestamos);
-
-  console.log('Datos predefinidos insertados correctamente');
+    console.log('Datos de prueba insertados correctamente.');
+  } catch (error) {
+    console.error('Error al inicializar la base de datos:', error);
+  }
 };
 
+
 module.exports = db;
-
-
-
-

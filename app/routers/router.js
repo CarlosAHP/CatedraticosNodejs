@@ -1,23 +1,10 @@
 let express = require('express');
 let router = express.Router();
 
-const catedraticos = require('../controllers/catedraticos.controller.js');
-const controlIngresos = require('../controllers/controlingreso.controller.js');
 const providers = require('../controllers/provider.controller.js');
+const projectController = require('../controllers/project.controller.js');
+const authController = require('../controllers/auth.controller');
 
-// Rutas para Catedraticos
-router.post('/api/catedraticos/create', catedraticos.create);
-router.get('/api/catedraticos', catedraticos.retrieveAll);
-router.get('/api/catedraticos/:id', catedraticos.getById);
-router.put('/api/catedraticos/:id', catedraticos.update);
-router.delete('/api/catedraticos/:id', catedraticos.delete);
-
-// Rutas para Control de Ingreso
-router.post('/api/control-ingreso/create', controlIngresos.create);
-router.get('/api/control-ingreso', controlIngresos.retrieveAll);
-router.get('/api/control-ingreso/:id', controlIngresos.getById);
-router.put('/api/control-ingreso/:id', controlIngresos.update); // Agregar si tienes un método update
-router.delete('/api/control-ingreso/:id', controlIngresos.delete); // Agregar si tienes un método delete
 
 // Provider routes
 router.post('/api/providers/create', providers.create);
@@ -25,5 +12,19 @@ router.get('/api/providers', providers.findAll);
 router.get('/api/providers/:id', providers.findById);
 router.put('/api/providers/:id', providers.update);
 router.delete('/api/providers/:id', providers.delete);
+
+// Rutas para operaciones CRUD
+router.post('/projects', projectController.create);
+router.get('/projects', projectController.findAll);
+router.get('/projects/:id', projectController.findOne);
+router.put('/projects/:id', projectController.update);
+router.delete('/projects/:id', projectController.delete);
+
+
+// Rutas de autenticación
+router.post('/login', authController.login); // Login con correo y contraseña
+router.post('/google-login', authController.googleLogin); // Login con Google
+router.get('/me', authController.obtenerUsuarioAutenticado); // Obtener datos del usuario autenticado
+router.put('/me', authController.actualizarPerfil); // Actualizar perfil del usuario autenticado
 
 module.exports = router;
